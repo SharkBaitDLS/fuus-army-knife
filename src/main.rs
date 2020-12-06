@@ -24,26 +24,32 @@ use crate::config::{load_config, write_default_config, FusionConfig};
 use crate::file::{FusionFile, FusionFileContent};
 use clap::{crate_version, App, Arg, SubCommand};
 use std::io::Write;
+use std::process;
 use tempfile::NamedTempFile;
 
 fn main() {
     let mut clap_app = configure_clap_app();
-    let matches = clap_app.clone().get_matches();
+    let app_matches = clap_app.clone().get_matches();
 
-    let config_file_name = matches.value_of("config").unwrap_or_else(|| "fuusak.toml");
+    // Run create-config sub-command before trying to load config
+    if app_matches.subcommand_matches("create-config").is_some() {
+        subcommand_create_config();
+    }
+
+    let config_file_name = app_matches
+        .value_of("config")
+        .unwrap_or_else(|| "fuusak.toml");
     let fusion_config = load_config(config_file_name).unwrap_or_else(|error| bail!("{}", error));
 
-    if let Some(matches) = matches.subcommand_matches("debug-parser") {
+    if let Some(matches) = app_matches.subcommand_matches("debug-parser") {
         let path = matches.value_of("FILE").unwrap();
         subcommand_debug_parser(&fusion_config, path);
-    } else if let Some(_) = matches.subcommand_matches("create-config") {
-        subcommand_create_config();
-    } else if let Some(matches) = matches.subcommand_matches("format") {
+    } else if let Some(matches) = app_matches.subcommand_matches("format") {
         let path = matches.value_of("FILE").unwrap();
         subcommand_format(&fusion_config, path);
-    } else if let Some(_) = matches.subcommand_matches("format-all") {
+    } else if let Some(_) = app_matches.subcommand_matches("format-all") {
         subcommand_format_all(&fusion_config);
-    } else if let Some(_) = matches.subcommand_matches("checkstyle-all") {
+    } else if let Some(_) = app_matches.subcommand_matches("checkstyle-all") {
         subcommand_checkstyle_all(&fusion_config);
     } else {
         drop(clap_app.print_help());
@@ -97,6 +103,7 @@ fn subcommand_debug_parser(fusion_config: &FusionConfig, path: &str) {
 
 fn subcommand_create_config() {
     write_default_config().unwrap_or_else(|err| bail!("Failed to write default config: {}", err));
+    process::exit(0);
 }
 
 fn format_file_in_place(fusion_config: &FusionConfig, fusion_file: &FusionFile) {

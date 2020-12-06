@@ -26,46 +26,7 @@ impl FusionConfig {
     }
 }
 
-const DEFAULT_CONFIG: &'static str = r#"
-[fusion]
-
-# Newline mode 'no-change' will make zero changes to newlines in the file.
-# Mode 'fix-up' will shuffle around newlines for improved formatting.
-newline_mode = "fix-up"
-
-# If true, multi-line Fusion strings (''') will have their whitespace modified
-# Recommend leaving this as `false` to preserve Fusion doc strings until
-# the documentation system can handle indented doc strings correctly.
-format_multiline_string_contents = false
-
-# Function/macro names that should have a fixed indent for their body.
-# For example, `define`, `begin`, and `let`, may want a fixed indent to avoid crazy indentation levels.
-fixed_indent_symbols = [
-    # Fusion defaults
-    "begin",
-    "cond",
-    "define",
-    "define_check",
-    "define_syntax",
-    "defpub",
-    "defpub_j",
-    "defpub_j_syntax",
-    "defpub_syntax",
-    "if",
-    "lambda",
-    "let",
-    "lets",
-    "map",
-    "unless",
-    "when",
-    "|",
-]
-
-# Function/macro names that should use fixed indent if their body is long.
-# For example, `if` could be formatted normally if it's short, but formatted like a `define` if long.
-smart_indent_symbols = [
-]
-"#;
+const DEFAULT_CONFIG: &'static str = include_str!("configs/default.toml");
 
 #[cfg(test)]
 pub fn new_default_config() -> FusionConfig {
@@ -117,8 +78,8 @@ pub fn load_config(config_file_name: &str) -> Result<FusionConfig, Error> {
 pub fn write_default_config() -> Result<(), Error> {
     use std::fs::File;
     use std::io::Write;
-
-    let mut file = File::create("fuusak.toml").map_err(|err| Error::Generic(format!("{}", err)))?;
-    write!(file, "{}", DEFAULT_CONFIG).map_err(|err| Error::Generic(format!("{}", err)))?;
+    let mut file = File::create("fuusak.toml").map_err(|err| err_generic!("{}", err))?;
+    write!(file, "{}", DEFAULT_CONFIG).map_err(|err| err_generic!("{}", err))?;
+    println!("Wrote default config to fuusak.toml");
     Ok(())
 }
