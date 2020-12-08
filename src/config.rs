@@ -78,6 +78,7 @@ pub fn load_config(config_file_name: &str) -> Result<FusionConfig, Error> {
 pub fn write_default_config() -> Result<(), Error> {
     use std::fs::File;
     use std::io::Write;
+
     let mut file = File::create("fuusak.toml").map_err(|err| err_generic!("{}", err))?;
     write!(file, "{}", DEFAULT_CONFIG).map_err(|err| err_generic!("{}", err))?;
     println!("Wrote default config to fuusak.toml");
