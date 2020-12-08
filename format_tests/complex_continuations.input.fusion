@@ -62,4 +62,6 @@ biz]
 { something: 1,
 some_lambda: (|foo|
 (asdf)
+(asdf))}
+{ some_other_lambda: (||
 (asdf))})
