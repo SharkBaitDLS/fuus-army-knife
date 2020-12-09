@@ -26,9 +26,10 @@ use crate::error::Error;
 use crate::file::{FusionFile, FusionFileContent};
 use clap::{crate_version, App, Arg, SubCommand};
 use std::collections::HashSet;
+use std::env;
+use std::fs::{self, File};
 use std::io::Write;
 use std::process;
-use tempfile::NamedTempFile;
 
 fn main() {
     let mut clap_app = configure_clap_app();
@@ -143,22 +144,20 @@ fn format_file_in_place(fusion_config: &FusionConfig, fusion_file: &FusionFile) 
     let formatted = format::format(fusion_config, &fusion_file.ast);
 
     // Write formatted to a temp file
-    let mut temp_file: NamedTempFile =
-        NamedTempFile::new().unwrap_or_else(|err| bail!("Failed to create temp file: {}", err));
+    let temp_file_path = fusion_file.file_name.with_extension("tmp-fuusak");
+    let mut temp_file = File::create(&temp_file_path)
+        .unwrap_or_else(|err| bail!("Failed to create temp file: {}", err));
     write!(temp_file, "{}", formatted)
         .unwrap_or_else(|err| bail!("Failed to write to temp file: {}", err));
 
     // Replace original file with temp file via rename
-    temp_file
-        .into_temp_path()
-        .persist(&fusion_file.file_name)
-        .unwrap_or_else(|err| {
-            bail!(
-                "Failed to overwrite {:?} with formatted output: {}",
-                fusion_file.file_name,
-                err
-            )
-        });
+    fs::rename(&temp_file_path, &fusion_file.file_name).unwrap_or_else(|err| {
+        bail!(
+            "Failed to overwrite {:?} with formatted output: {}",
+            fusion_file.file_name,
+            err
+        )
+    });
 }
 
 fn subcommand_format(fusion_config: &FusionConfig, path: &str) {
