@@ -205,7 +205,7 @@
                         typ: Symbol,
                         span: "'a'",
                         annotations: [],
-                        value: "\'a\'",
+                        value: "'a'",
                     },
                 ),
                 Atomic(
@@ -213,7 +213,7 @@
                         typ: Symbol,
                         span: "'+-'",
                         annotations: [],
-                        value: "\'+-\'",
+                        value: "'+-'",
                     },
                 ),
                 Atomic(
@@ -221,7 +221,7 @@
                         typ: Symbol,
                         span: "'b'",
                         annotations: [],
-                        value: "\'b\'",
+                        value: "'b'",
                     },
                 ),
             ],
@@ -283,7 +283,7 @@
                         typ: Symbol,
                         span: "'a'",
                         annotations: [],
-                        value: "\'a\'",
+                        value: "'a'",
                     },
                 ),
                 Atomic(
@@ -291,7 +291,7 @@
                         typ: Symbol,
                         span: "'.'",
                         annotations: [],
-                        value: "\'.\'",
+                        value: "'.'",
                     },
                 ),
                 Atomic(
@@ -299,7 +299,7 @@
                         typ: Symbol,
                         span: "'b'",
                         annotations: [],
-                        value: "\'b\'",
+                        value: "'b'",
                     },
                 ),
                 Atomic(
@@ -307,7 +307,7 @@
                         typ: Symbol,
                         span: "';'",
                         annotations: [],
-                        value: "\';\'",
+                        value: "';'",
                     },
                 ),
             ],

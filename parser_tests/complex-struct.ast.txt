@@ -145,7 +145,7 @@
                                                 typ: Symbol,
                                                 span: "'another key'",
                                                 annotations: [],
-                                                value: "\'another key\'",
+                                                value: "'another key'",
                                             },
                                         ),
                                         Atomic(

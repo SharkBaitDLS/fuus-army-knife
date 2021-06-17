@@ -335,7 +335,7 @@
                                         StructKey(
                                             NonAnnotatedStringData {
                                                 span: "'foo bar'",
-                                                value: "\'foo bar\'",
+                                                value: "'foo bar'",
                                             },
                                         ),
                                         SExpr(
