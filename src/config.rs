@@ -3,8 +3,8 @@ use crate::error::Error;
 use std::path::PathBuf;
 use toml::Value;
 
-const NEWLINE_MODE_NO_CHANGE: &'static str = "no-change";
-const NEWLINE_MODE_FIX_UP: &'static str = "fix-up";
+const NEWLINE_MODE_NO_CHANGE: &str = "no-change";
+const NEWLINE_MODE_FIX_UP: &str = "fix-up";
 
 pub struct FusionConfig {
     /// Newline mode 'no-change' will make zero changes to newlines in the file.
@@ -62,7 +62,7 @@ impl FusionConfig {
     }
 }
 
-const DEFAULT_CONFIG: &'static str = include_str!("configs/default.toml");
+const DEFAULT_CONFIG: &str = include_str!("configs/default.toml");
 
 pub fn new_default_config() -> FusionConfig {
     FusionConfig::from_default_toml(

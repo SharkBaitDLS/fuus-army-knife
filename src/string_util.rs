@@ -38,7 +38,7 @@ fn test_find_cursor_pos() {
 pub fn already_has_whitespace_before_cursor(value: &str) -> bool {
     let value = value.as_bytes();
     let index = (value.len() as isize) - 1;
-    return index > 0 && (value[index as usize] == b' ' || value[index as usize] == b'\n');
+    index > 0 && (value[index as usize] == b' ' || value[index as usize] == b'\n')
 }
 
 #[cfg(test)]
@@ -59,7 +59,7 @@ pub fn indent_len(value: &str) -> usize {
         }
         count += 1;
     }
-    return count;
+    count
 }
 
 #[cfg(test)]
@@ -74,8 +74,8 @@ fn test_indent_len() {
 pub fn min_indent_len(value: &str) -> usize {
     value
         .lines()
-        .filter(|line| line.trim().len() > 0)
-        .map(|line| indent_len(line))
+        .filter(|line| !line.trim().is_empty())
+        .map(indent_len)
         .min()
         .unwrap_or(0)
 }

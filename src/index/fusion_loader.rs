@@ -71,7 +71,7 @@ impl<'i> FusionLoader<'i> {
         module_name: String,
         file_path: &Path,
     ) -> Result<ModuleCell, Error> {
-        let file = FusionFile::load(self.config, &file_path)
+        let file = FusionFile::load(self.config, file_path)
             .map_err(|err| err_generic!("failed to load {:?}: {}", file_path, err))?;
 
         let module = self.process_file(module_name, file)?;
@@ -127,7 +127,7 @@ impl<'i> FusionLoader<'i> {
             let mut processed = ProcessedFile::new();
             for expr in &file.ast {
                 self.visit_expr(&mut processed, expr, false)
-                    .map_err(&|err: Error| err.resolve_spanned(&file.file_name, &file.contents))?;
+                    .map_err(|err: Error| err.resolve_spanned(&file.file_name, &file.contents))?;
             }
             drop(processed);
         }
@@ -147,7 +147,7 @@ impl<'i> FusionLoader<'i> {
     fn determine_module_name(&self, file_path: &Path) -> Result<String, Error> {
         let module_repo = self.index.borrow();
         let parent_path = module_repo
-            .find_parent_path(&file_path)
+            .find_parent_path(file_path)
             .ok_or_else(|| err_generic!("failed to find parent path of {:?}", file_path))?;
         let relative_module_path = file_path
             .strip_prefix(parent_path)
@@ -165,7 +165,7 @@ impl<'i> FusionLoader<'i> {
 
         for expr in &file.ast {
             self.visit_expr(&mut processed, expr, false)
-                .map_err(&|err: Error| err.resolve_spanned(&file.file_name, &file.contents))?;
+                .map_err(|err: Error| err.resolve_spanned(&file.file_name, &file.contents))?;
         }
 
         let (language, requires, provides) = processed.dissolve();
@@ -252,12 +252,11 @@ impl<'i> FusionLoader<'i> {
             .ok_or_else(|| err_spanned!(span, "missing module name"))?;
         let language = rest
             .next()
-            .map(|expr| {
+            .and_then(|expr| {
                 expr.string_value()
                     .map(|v| v.as_str())
                     .or(expr.stripped_symbol_value())
             })
-            .flatten()
             .ok_or_else(|| err_spanned!(span, "missing module language"))?;
         processed.language = Some(language.to_string());
         self.load_module(language)?;
@@ -330,8 +329,7 @@ impl<'i> FusionLoader<'i> {
     ) -> Result<(), Error> {
         let module_name = rest
             .next()
-            .map(|expr| expr.string_value())
-            .flatten()
+            .and_then(|expr| expr.string_value())
             .ok_or_else(|| err_spanned!(span, "missing module name"))?;
         let module = self.load_module(module_name)?;
         processed.requires.push(RequireForm::new(
@@ -362,8 +360,7 @@ impl<'i> FusionLoader<'i> {
     ) -> Result<(), Error> {
         let module_name = rest
             .next()
-            .map(|expr| expr.string_value())
-            .flatten()
+            .and_then(|expr| expr.string_value())
             .ok_or_else(|| err_spanned!(span, "missing module name"))?;
         let module = self.load_module(module_name)?;
         processed.requires.push(RequireForm::new(
@@ -447,13 +444,11 @@ impl<'i> FusionLoader<'i> {
             let mut inner_itr = sexpr.item_iter();
             let local_name = inner_itr
                 .next()
-                .map(|expr| expr.symbol_value())
-                .flatten()
+                .and_then(|expr| expr.symbol_value())
                 .ok_or_else(|| err_spanned!(rename_out_span, "rename_out requires a local name"))?;
             let provided_name = inner_itr
                 .next()
-                .map(|expr| expr.symbol_value())
-                .flatten()
+                .and_then(|expr| expr.symbol_value())
                 .ok_or_else(|| {
                     err_spanned!(rename_out_span, "rename_out requires a provided name")
                 })?;
@@ -473,10 +468,10 @@ impl<'i> FusionLoader<'i> {
             }
             Ok(())
         } else {
-            return Err(err_spanned!(
+            Err(err_spanned!(
                 rename_out_span,
                 "rename_out expected s-expression"
-            ));
+            ))
         }
     }
 

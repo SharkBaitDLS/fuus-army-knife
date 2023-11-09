@@ -1,6 +1,4 @@
 // Copyright Ion Fusion contributors. All Rights Reserved.
-#![warn(rust_2018_idioms)]
-
 #[macro_use]
 extern crate derive_new;
 #[macro_use]
@@ -42,7 +40,7 @@ fn main() {
 
     let config_file_name = app_matches.value_of("config");
 
-    if let Some(_) = app_matches.subcommand_matches("format-server") {
+    if app_matches.subcommand_matches("format-server").is_some() {
         let fusion_config =
             load_config(config_file_name, true).unwrap_or_else(|error| bail!("{}", error));
         subcommand_format_server(&fusion_config);
@@ -55,16 +53,19 @@ fn main() {
     if let Some(matches) = app_matches.subcommand_matches("debug-parser") {
         let path = matches.value_of("FILE").unwrap();
         subcommand_debug_parser(&fusion_config, path);
-    } else if let Some(_) = app_matches.subcommand_matches("debug-index") {
+    } else if app_matches.subcommand_matches("debug-index").is_some() {
         subcommand_debug_index(&fusion_config).unwrap_or_else(|err| bail!("Failed: {}", err));
     } else if let Some(matches) = app_matches.subcommand_matches("format") {
         let path = matches.value_of("FILE").unwrap();
         subcommand_format(&fusion_config, path);
-    } else if let Some(_) = app_matches.subcommand_matches("format-all") {
+    } else if app_matches.subcommand_matches("format-all").is_some() {
         subcommand_format_all(&fusion_config);
-    } else if let Some(_) = app_matches.subcommand_matches("check-correctness-watch") {
+    } else if app_matches
+        .subcommand_matches("check-correctness-watch")
+        .is_some()
+    {
         subcommand_check_correctness_watch(&fusion_config);
-    } else if let Some(_) = app_matches.subcommand_matches("checkstyle-all") {
+    } else if app_matches.subcommand_matches("checkstyle-all").is_some() {
         subcommand_checkstyle_all(&fusion_config);
     } else if let Some(matches) = app_matches.subcommand_matches("checkstyle") {
         let path = matches.value_of("FILE").unwrap();
@@ -180,9 +181,10 @@ fn checkstyle(fusion_config: &FusionConfig, file: &FusionFile) -> bool {
             file.file_name
         );
         println!("{}", diff_util::human_diff_lines(actual, expected));
-        return false;
+        false
+    } else {
+        true
     }
-    return true;
 }
 
 fn subcommand_format(fusion_config: &FusionConfig, path: &str) {

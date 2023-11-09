@@ -68,14 +68,12 @@ pub fn find_files<P: AsRef<Path>>(path: P, desired_extension: &str) -> Result<Ve
             .file_type()
             .map(|file_type| file_type.is_dir())
             .unwrap_or(true)
-        {
-            if path
+            && path
                 .as_os_str()
                 .to_string_lossy()
                 .ends_with(desired_extension)
-            {
-                fusion_files.push(path.into());
-            }
+        {
+            fusion_files.push(path.into());
         }
     }
     Ok(fusion_files)
@@ -84,7 +82,7 @@ pub fn find_files<P: AsRef<Path>>(path: P, desired_extension: &str) -> Result<Ve
 fn replace_spans(file_content: &str, debug_view: &str) -> String {
     let span_finder = Regex::new(r"\[Span\((\d+)->(\d+)\)\]").unwrap();
     span_finder
-        .replace_all(&debug_view, |caps: &Captures<'_>| {
+        .replace_all(debug_view, |caps: &Captures<'_>| {
             let start = caps[1].parse::<usize>().unwrap();
             let end = caps[2].parse::<usize>().unwrap();
             let truncate = end - start > 40;
@@ -92,11 +90,11 @@ fn replace_spans(file_content: &str, debug_view: &str) -> String {
 
             format!(
                 "\"{}{}\"{}",
-                (&file_content[start..end])
-                    .replace("\"", "\\\"")
-                    .replace("\t", "\\t")
-                    .replace("\n", "\\n")
-                    .replace("\r", "\\r"),
+                file_content[start..end]
+                    .replace('\"', "\\\"")
+                    .replace('\t', "\\t")
+                    .replace('\n', "\\n")
+                    .replace('\r', "\\r"),
                 if truncate { "..." } else { "" },
                 if truncate { " (truncated)" } else { "" }
             )
@@ -128,7 +126,7 @@ impl FusionFileContent {
     }
 
     pub fn parse(self, fusion_config: &FusionConfig) -> Result<FusionFile, Error> {
-        let ast = parser::parse(&self.file_name, &self.contents, &fusion_config)
+        let ast = parser::parse(&self.file_name, &self.contents, fusion_config)
             .map_err(|error| err_generic!("Failed to parse {:?}: {}", self.file_name, error))?;
         Ok(FusionFile::new(self.file_name, self.contents, ast))
     }

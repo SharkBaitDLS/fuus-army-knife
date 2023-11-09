@@ -24,9 +24,7 @@ impl Error {
             Error::Spanned(span, msg) => {
                 let pest_span = Span::new(file_contents, span.start, span.end).unwrap();
                 let pest_error = PestError::new_from_span(
-                    ErrorVariant::<crate::lexer::Rule>::CustomError {
-                        message: msg.into(),
-                    },
+                    ErrorVariant::<crate::lexer::Rule>::CustomError { message: msg },
                     pest_span,
                 )
                 .with_path(&file_name.as_ref().as_os_str().to_string_lossy());

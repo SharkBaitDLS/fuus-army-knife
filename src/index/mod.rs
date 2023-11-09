@@ -50,17 +50,17 @@ mod test {
         if let Err(err) =
             fusion_loader.load_module_file("index_tests/bootstrap/test_files/some_mod.fusion")
         {
-            assert!(false, format!("\n{}", err));
+            panic!("\n{}", err);
         }
 
         let expected_repo = include_str!("../../index_tests/bootstrap/expected-repo.txt").trim();
         let actual_repo = format!("{:#?}", fusion_index);
-        if expected_repo != &actual_repo {
+        if expected_repo != actual_repo {
             let msg = format!(
                 "\nIndexing index_tests/bootstrap/test_files failed:\n{}\n",
                 human_diff_lines(expected_repo, actual_repo)
             );
-            assert!(false, msg);
+            panic!("{}", msg);
         }
     }
 }

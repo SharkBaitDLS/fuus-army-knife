@@ -1,8 +1,8 @@
 // Copyright Ion Fusion contributors. All Rights Reserved.
 use crate::ast::*;
 
-pub fn fixup_ast(ast: &Vec<Expr>) -> Vec<Expr> {
-    ast.iter().cloned().map(|expr| fixup_expr(expr)).collect()
+pub fn fixup_ast(ast: &[Expr]) -> Vec<Expr> {
+    ast.iter().cloned().map(fixup_expr).collect()
 }
 
 fn fixup_expr(mut expr: Expr) -> Expr {
@@ -11,7 +11,7 @@ fn fixup_expr(mut expr: Expr) -> Expr {
     expr = clear_empty(expr);
     match expr {
         SExpr(ref mut data) | List(ref mut data) | Struct(ref mut data) => {
-            drop(fixup_list(&mut data.items));
+            fixup_list(&mut data.items);
             let mut i = 0;
             while i < data.items.len() {
                 let last_is_newlines = i == 0 || data.items[i - 1].is_newlines();
@@ -55,18 +55,16 @@ fn fixup_list(items: &mut Vec<Expr>) -> bool {
     let should_add_preceding_newline = has_values && things_before_newline == 0;
 
     // Remove the very first newlines instance
-    for i in 0..items.len() {
-        if items[i].is_newlines() {
-            items.remove(i);
+    if let Some(line) = items.first() {
+        if line.is_newlines() {
+            items.remove(0);
         }
-        break;
     }
+
     // Remove trailing newlines if there's no comment
     let len = items.len();
-    if len >= 2 {
-        if !items[len - 2].is_comment_line() && items[len - 1].is_newlines() {
-            items.remove(len - 1);
-        }
+    if len >= 2 && !items[len - 2].is_comment_line() && items[len - 1].is_newlines() {
+        items.remove(len - 1);
     }
 
     should_add_preceding_newline

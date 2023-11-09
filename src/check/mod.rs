@@ -6,6 +6,7 @@ use colorful::{Color, Colorful};
 use notify::DebouncedEvent::{Remove, Rename, Write};
 use notify::{watcher, RecommendedWatcher, RecursiveMode, Watcher};
 use rand::random;
+use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::path::{Path, PathBuf};
@@ -26,7 +27,7 @@ pub fn check_correctness_watch(fusion_config: &FusionConfig) -> Result<bool, Err
     let mut watcher = watcher(tx, Duration::from_millis(50))
         .map_err(|err| err_generic!("Failed to create file watch: {}", err))?;
     for path in &watch_paths {
-        watch_path(&mut watcher, &path)?;
+        watch_path(&mut watcher, path)?;
     }
 
     // Watch for file system changes
@@ -82,7 +83,7 @@ fn reload_scripts(
     for script_name in names.iter() {
         let (modules, globals, file_names) = {
             let fusion_index = fusion_index.borrow();
-            let script_cell = fusion_index.get_script(&script_name).unwrap();
+            let script_cell = fusion_index.get_script(script_name).unwrap();
             let script = script_cell.borrow();
             (
                 script.top_level_modules.clone(),
@@ -109,7 +110,7 @@ fn reload_scripts(
     }
 }
 
-const AWESOME_MESSAGES: &'static [&'static str] = &[
+const AWESOME_MESSAGES: &[&str] = &[
     "You're awesome!",
     "Wow, that just worked!",
     "Fantastic. First try?",
@@ -167,7 +168,7 @@ enum Reference {
 fn build_references(
     package_path: &Path,
     fusion_index: &FusionIndexCell,
-    watch_paths: &Vec<PathBuf>,
+    watch_paths: &[PathBuf],
 ) -> HashMap<PathBuf, Reference> {
     let mut references = HashMap::new();
 
@@ -190,15 +191,17 @@ fn build_references(
                 .iter()
                 .any(|path| file_name.strip_prefix(path).is_ok())
             {
-                if references.contains_key(&file_name) {
-                    if let Some(Reference::Scripts(ref mut names)) = references.get_mut(&file_name)
-                    {
+                match references.entry(file_name) {
+                    Entry::Vacant(entry) => {
+                        let mut names = HashSet::new();
                         names.insert(script.name.clone());
+                        entry.insert(Reference::Scripts(names));
                     }
-                } else {
-                    let mut names = HashSet::new();
-                    names.insert(script.name.clone());
-                    references.insert(file_name, Reference::Scripts(names));
+                    Entry::Occupied(mut entry) => {
+                        if let Reference::Scripts(ref mut names) = entry.get_mut() {
+                            names.insert(script.name.clone());
+                        }
+                    }
                 }
             }
         }

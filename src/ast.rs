@@ -53,10 +53,7 @@ pub enum ClobExpr {
 
 impl ClobExpr {
     pub fn is_newlines(&self) -> bool {
-        match *self {
-            ClobExpr::Newlines(_) => true,
-            _ => false,
-        }
+        matches!(*self, ClobExpr::Newlines(_))
     }
 }
 
@@ -106,7 +103,7 @@ impl ListData {
         self.items.iter().map(|expr| expr.count_newlines()).sum()
     }
 
-    pub fn item_iter<'a>(&'a self) -> impl Iterator<Item = &'a Expr> {
+    pub fn item_iter(&self) -> impl Iterator<Item = &'_ Expr> {
         self.items
             .iter()
             .filter(|expr| (*expr).is_not_comment_or_newlines())
@@ -163,53 +160,31 @@ pub enum Expr {
 }
 impl Expr {
     pub fn is_newlines(&self) -> bool {
-        match *self {
-            Expr::Newlines(_) => true,
-            _ => false,
-        }
+        matches!(*self, Expr::Newlines(_))
     }
 
     pub fn is_comment(&self) -> bool {
-        match *self {
-            Expr::CommentBlock(_) => true,
-            Expr::CommentLine(_) => true,
-            _ => false,
-        }
+        matches!(*self, Expr::CommentBlock(_) | Expr::CommentLine(_))
     }
 
     pub fn is_comment_line(&self) -> bool {
-        match *self {
-            Expr::CommentLine(_) => true,
-            _ => false,
-        }
+        matches!(*self, Expr::CommentLine(_))
     }
 
-    pub fn is_list(&self) -> bool {
-        match self {
-            Expr::List(_) => true,
-            _ => false,
-        }
+    pub fn _is_list(&self) -> bool {
+        matches!(self, Expr::List(_))
     }
 
     pub fn is_struct(&self) -> bool {
-        match *self {
-            Expr::Struct(_) => true,
-            _ => false,
-        }
+        matches!(*self, Expr::Struct(_))
     }
 
     pub fn is_struct_key(&self) -> bool {
-        match self {
-            Expr::StructKey(_) => true,
-            _ => false,
-        }
+        matches!(self, Expr::StructKey(_))
     }
 
     pub fn is_sexpr(&self) -> bool {
-        match self {
-            Expr::SExpr(_) => true,
-            _ => false,
-        }
+        matches!(self, Expr::SExpr(_))
     }
 
     pub fn into_struct_value(self) -> Option<ListData> {
@@ -219,21 +194,21 @@ impl Expr {
         }
     }
 
-    pub fn sexpr_value<'a>(&'a self) -> Option<&'a ListData> {
+    pub fn sexpr_value(&self) -> Option<&ListData> {
         match self {
             Expr::SExpr(data) => Some(data),
             _ => None,
         }
     }
 
-    pub fn struct_value<'a>(&'a self) -> Option<&'a ListData> {
+    pub fn struct_value(&self) -> Option<&ListData> {
         match self {
             Expr::Struct(data) => Some(data),
             _ => None,
         }
     }
 
-    pub fn list_value<'a>(&'a self) -> Option<&'a ListData> {
+    pub fn list_value(&self) -> Option<&ListData> {
         match self {
             Expr::List(data) => Some(data),
             _ => None,
@@ -250,17 +225,14 @@ impl Expr {
 
     pub fn is_symbol(&self) -> bool {
         match *self {
-            Expr::Atomic(ref atomic) => match atomic.typ {
-                AtomicType::Symbol => true,
-                _ => false,
-            },
+            Expr::Atomic(ref atomic) => matches!(atomic.typ, AtomicType::Symbol),
             _ => false,
         }
     }
 
-    pub fn stripped_symbol_value<'a>(&'a self) -> Option<&'a str> {
+    pub fn stripped_symbol_value(&self) -> Option<&str> {
         self.symbol_value().map(|val| {
-            if val.starts_with("'") && val.ends_with("'") {
+            if val.starts_with('\'') && val.ends_with('\'') {
                 &val[1..(val.len() - 1)]
             } else {
                 val
@@ -268,7 +240,7 @@ impl Expr {
         })
     }
 
-    pub fn symbol_value<'a>(&'a self) -> Option<&'a String> {
+    pub fn symbol_value(&self) -> Option<&String> {
         match *self {
             Expr::Atomic(ref atomic) => match atomic.typ {
                 AtomicType::Symbol => Some(&atomic.value),
@@ -306,7 +278,7 @@ impl Expr {
         self
     }
 
-    pub fn string_value<'a>(&'a self) -> Option<&'a String> {
+    pub fn string_value(&self) -> Option<&String> {
         match self {
             Expr::Atomic(data) => match data.typ {
                 AtomicType::QuotedString => Some(&data.value),

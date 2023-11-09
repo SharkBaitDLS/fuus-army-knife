@@ -8,7 +8,7 @@ use std::fmt;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-pub const TOP_LEVEL_MODULE_NAME: &'static str = "/fusion/private/kernel";
+pub const TOP_LEVEL_MODULE_NAME: &str = "/fusion/private/kernel";
 
 pub type FusionIndexCell = Rc<RefCell<FusionIndex>>;
 
@@ -62,11 +62,11 @@ impl FusionIndex {
         self.modules.get(TOP_LEVEL_MODULE_NAME).unwrap().clone()
     }
 
-    pub fn module_iter<'a>(&'a self) -> impl Iterator<Item = &'a ModuleCell> {
+    pub fn module_iter(&self) -> impl Iterator<Item = &'_ ModuleCell> {
         self.modules.iter().map(|entry| entry.1)
     }
 
-    pub fn script_iter<'a>(&'a self) -> impl Iterator<Item = &'a ScriptCell> {
+    pub fn script_iter(&self) -> impl Iterator<Item = &'_ ScriptCell> {
         self.scripts.iter().map(|entry| entry.1)
     }
 
@@ -91,10 +91,10 @@ impl FusionIndex {
     pub fn find_module_file(&self, module_name: &str) -> Option<PathBuf> {
         let module_file_name = format!(
             "{}.fusion",
-            if module_name.starts_with("/") {
-                &module_name[1..]
+            if let Some(stripped) = module_name.strip_prefix('/') {
+                stripped
             } else {
-                &module_name[..]
+                module_name
             }
         );
         for path in &self.module_paths {

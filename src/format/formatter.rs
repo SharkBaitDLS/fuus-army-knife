@@ -52,7 +52,7 @@ impl<'i> Formatter<'i> {
 
     fn visit_annotations(&mut self, annotations: &[String]) {
         for annotation in annotations {
-            self.output.push_str(&annotation);
+            self.output.push_str(annotation);
         }
     }
 
@@ -99,21 +99,21 @@ impl<'i> Formatter<'i> {
         self.output.push_str("/*");
         if data.value.len() == 1 {
             self.output.push(' ');
-            self.output.push_str(&data.value[0].trim());
+            self.output.push_str(data.value[0].trim());
             self.output.push(' ');
         } else {
             for i in 0..data.value.len() {
                 let line = &data.value[i];
-                if i > 0 && line.trim().len() == 0 && i == data.value.len() - 1 {
+                if i > 0 && line.trim().is_empty() && i == data.value.len() - 1 {
                     break;
                 } else if i > 0 {
                     self.output.push_str(&repeat(' ', continuation_indent));
                     self.output.push('*');
                 }
-                if line.trim().len() > 0 {
+                if !line.trim().is_empty() {
                     self.output.push(' ');
                 }
-                self.output.push_str(&line);
+                self.output.push_str(line);
                 self.output.push('\n');
             }
             if last_is_one_of(&self.output, &['\n']) {
@@ -200,7 +200,7 @@ impl<'i> Formatter<'i> {
     fn visit_list(&mut self, data: &ListData) {
         self.visit_annotations(&data.annotations);
         self.output.push('[');
-        if data.items.len() > 0 {
+        if !data.items.is_empty() {
             let opening_indent = find_cursor_pos(&self.output) - 1;
             let continuation_indent = opening_indent + 1;
             for i in 0..data.items.len() {
@@ -268,7 +268,7 @@ impl<'i> Formatter<'i> {
         if !last_is_one_of(&self.output, &['{', '}', ' ', '\n']) {
             self.output.push(' ');
         }
-        self.output.push_str("}");
+        self.output.push('}');
     }
 }
 

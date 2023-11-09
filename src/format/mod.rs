@@ -44,7 +44,7 @@ mod tests {
                     $output,
                     human_diff_lines(expected_output, actual_output)
                 );
-                assert!(false, msg);
+                assert!(false, "{}", msg);
             }
         };
     }

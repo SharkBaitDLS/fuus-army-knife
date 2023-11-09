@@ -33,14 +33,14 @@ pub struct RequireForm {
 impl RequireForm {
     pub fn find_origin(&self, name: &String) -> Option<ShortSpan> {
         match &self.required {
-            RequireType::All => self.module.borrow().provides.get(name).map(|s| *s),
+            RequireType::All => self.module.borrow().provides.get(name).copied(),
             RequireType::Names(names) => names
                 .iter()
-                .find(|origin| &(*origin).name == name)
+                .find(|origin| &origin.name == name)
                 .map(|origin| origin.originates_from),
             RequireType::Mapped(mapping) => mapping
                 .values()
-                .find(|origin| &(*origin).name == name)
+                .find(|origin| &origin.name == name)
                 .map(|origin| origin.originates_from),
         }
     }
