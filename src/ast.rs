@@ -252,6 +252,7 @@ impl Expr {
     }
 
     pub fn span(&self) -> ShortSpan {
+        #[allow(clippy::match_same_arms)]
         match self {
             Expr::Atomic(data) => data.span,
             Expr::Clob(data) => data.span,
@@ -267,6 +268,7 @@ impl Expr {
     }
 
     pub fn attach_annotations(mut self: Expr, annotations: Vec<String>) -> Expr {
+        #[allow(clippy::match_same_arms)]
         match &mut self {
             Expr::Atomic(data) => data.annotations = annotations,
             Expr::Clob(data) => data.annotations = annotations,
@@ -274,7 +276,9 @@ impl Expr {
             Expr::MultilineString(data) => data.annotations = annotations,
             Expr::SExpr(data) => data.annotations = annotations,
             Expr::Struct(data) => data.annotations = annotations,
-            _ => unreachable!(),
+
+            // These variants are syntactically not annotatable and should never be reached as such
+            Expr::CommentBlock(_) | Expr::CommentLine(_) | Expr::Newlines(_) | Expr::StructKey(_) => unreachable!(),
         }
         self
     }
@@ -292,6 +296,7 @@ impl Expr {
 }
 impl CountNewlines for &Expr {
     fn count_newlines(&self) -> usize {
+        #[allow(clippy::match_same_arms)]
         match *self {
             Expr::Atomic(_) => 0,
             Expr::Clob(data) => data.count_newlines(),
@@ -332,6 +337,6 @@ where
 
 impl CountItemsBeforeNewline for &[Expr] {
     fn count_items_before_newline(&self) -> usize {
-        self.count_until(|e| e.is_not_comment_or_newlines(), |e| e.is_newlines())
+        self.count_until(Expr::is_not_comment_or_newlines, Expr::is_newlines)
     }
 }
